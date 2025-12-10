@@ -82,5 +82,5 @@ def print_stream(stream):
         else:
             message.pretty_print()
 
-inputs = {"messages": [("user", "What is 1234 + 5678?, Multipl 234 by 8")]}
+inputs = {"messages": [("user", "What is 1234 + 5678?")]}
 print_stream(agent.stream(inputs, stream_mode="values"))
