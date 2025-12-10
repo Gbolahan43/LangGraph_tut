@@ -2,11 +2,13 @@ from typing import TypedDict, Annotated, Sequence
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, BaseMessage, ToolMessage
 from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
+import os
 
 
 load_dotenv()
@@ -45,7 +47,19 @@ def save(filename: str) -> str:
 
 tools = [update, save]
 
-model = ChatGoogleGenerativeAI(model="gemini-3-pro-preview", temperature=0).bind_tools(tools)
+# model = ChatGoogleGenerativeAI(model="gemini-3-pro-preview", temperature=0).bind_tools(tools)
+
+# model = ChatOpenAI(
+#     model="gpt-4o-mini",
+#     openai_api_key=os.getenv("OPENAI_API_KEY"),
+#     temperature=0.7
+# ).bind_tools(tools)
+
+model = ChatGroq(
+    model="llama-3.3-70b-versatile",  # Very fast and capable
+    groq_api_key=os.getenv("GROQ_API_KEY"),
+    temperature=0.7
+)
 
 def agent_call(state: AgentState) -> AgentState:
     system_prompt = SystemMessage(content="""
