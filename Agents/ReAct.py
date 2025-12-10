@@ -10,4 +10,77 @@ from langgraph.prebuilt import ToolNode
 
 load_dotenv()
 class AgentState(TypedDict):
-    messages: Annotated[Sequence[BaseMessage], "The conversation history between the user and the AI."] 
+    messages: Annotated[Sequence[BaseMessage], add_messages] 
+
+@tool
+
+def add(a: int, b: int) -> int:
+    """Add two numbers."""
+    return a + b
+
+@tool
+def subtract(a: int, b: int) -> int:
+    """Subtract two numbers."""
+    return a - b
+
+@tool
+def multiply(a: int, b: int) -> int:
+    """Multiply two numbers."""
+    return a * b
+
+@tool
+def divide(a: int, b: int) -> float:
+    """Divide two numbers."""
+    if b == 0:
+        raise ValueError("Cannot divide by zero.")
+    return a / b  
+
+tools = [add, subtract, multiply, divide]
+
+model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0).bind_tools(tools)
+
+def model_call(state: AgentState) -> AgentState:
+    system_prompt = SystemMessage(content="You are a helpful AI assistant. Answer the user's questions using the provided tools when necessary."
+                                 )
+    response = model.invoke([system_prompt] + state["messages"])
+    return {"messages":  [response]}
+
+def should_continue(state: AgentState):
+    messages = state["messages"]
+    last_message = messages[-1]
+    if not last_message.tool_calls:
+        return "end"
+    else:
+        return "continue"
+    
+
+graph = StateGraph(AgentState)
+graph.add_node("our_agent", model_call)
+
+tool_node = ToolNode(tools=tools)
+graph.add_node("tools", tool_node)
+graph.set_entry_point("our_agent")
+
+graph.add_conditional_edges(
+    "our_agent",
+    should_continue,
+    {
+        "continue": "tools",
+        "end": END,
+    },
+)
+
+graph.add_edge("tools", "our_agent")
+
+agent = graph.compile()
+
+def print_stream(stream):
+    for s in stream:
+        message = s["messages"][-1]
+        if isinstance(message, tuple):
+            print(message)
+        else:
+            message.pretty_print()
+
+inputs = {"messages": [("user", "What is 1234 + 5678?, Multipl 234 by 8")]}
+print_stream(agent.stream(inputs, stream_mode="values"))
