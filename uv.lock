@@ -544,6 +544,7 @@ dependencies = [
     { name = "langchain-groq" },
     { name = "langchain-openai" },
     { name = "python-dotenv" },
+    { name = "requests" },
 ]
 
 [package.metadata]
@@ -554,6 +555,7 @@ requires-dist = [
     { name = "langchain-groq", specifier = ">=1.1.0" },
     { name = "langchain-openai", specifier = ">=1.1.1" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
+    { name = "requests", specifier = ">=2.32.5" },
 ]
 
 [[package]]

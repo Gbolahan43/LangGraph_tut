@@ -29,14 +29,18 @@ def update(content: str) -> str:
 @tool
 def save(filename: str) -> str:
     """Saves the current document content to a text file and finish the drafting process.
+
+    Better to use .txt extension for the filename.
+    provide file name if not given .txt will be added automatically.
     
     Args:
     filename (str): The name of the file to save the document content to.
     """
 
     if not filename.endswith(".txt"):
-        filename += ".txt"
-    global document_content
+        filename = f"{filename}.txt"
+    
+    
     try:
         with open(filename, 'w') as file:
             file.write(document_content) 
@@ -95,7 +99,8 @@ def agent_call(state: AgentState) -> AgentState:
 
  
 def should_continue(state: AgentState) -> str:
-    """Decides whether to continue or end the drafting process based on the last message. """
+    """Decides whether to continue or end the conversation """
+
     messages = state["messages"]
 
     if not messages:
